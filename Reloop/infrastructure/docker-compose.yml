@@ -1,0 +1,38 @@
+# ============================================
+# ReLoop — Docker Compose Configuration
+# ============================================
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: infrastructure/docker/Dockerfile.backend
+    container_name: reloop-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - reloop-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: infrastructure/docker/Dockerfile.frontend
+    container_name: reloop-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  reloop-data:
+    driver: local
